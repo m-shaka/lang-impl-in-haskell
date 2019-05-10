@@ -21,8 +21,8 @@ FALSE { TkFalse }
 %%
 exp :: { Exp }
 exp
-  : TRUE { TrueExp }
-  | FALSE { FalseExp }
+  : TRUE { mkBool True }
+  | FALSE { mkBool False }
   | IF exp THEN exp ELSE exp { IfExp $2 $4 $6 }
 
 {

@@ -2,9 +2,10 @@ module Lib
     ( someFunc
     ) where
 
+import           AST    (eval)
 import           Parser
 
 someFunc :: IO ()
 someFunc = do
   s <- getContents
-  print $ parse s
+  print $ eval <$> parse s
