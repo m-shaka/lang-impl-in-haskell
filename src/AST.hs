@@ -1,13 +1,17 @@
 module AST where
 
+type Name = String
+
 type Exp = Exp'
 
 data Exp' =
-  Lit Lit
+  Var Name
+  | Lit Lit
   | IfExp Exp Exp Exp
   | Succ Exp
   | Pred Exp
   | IsZero Exp
+  | Decl Name Exp
   deriving (Show)
 
 data Lit =

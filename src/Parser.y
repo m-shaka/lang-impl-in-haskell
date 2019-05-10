@@ -21,8 +21,16 @@ ZERO { TkZero }
 SUCC { TkSucc }
 PRED { TkPred }
 ISZERO { TkIsZero }
+';' { TkSep }
+'=' { TkDecl }
+VAR { TkName $$ }
 
 %%
+exps :: { [Exp] }
+exps
+: exp { [$1] }
+| exp ';' exps { $1 : $3 }
+
 exp :: { Exp }
 exp
   : TRUE { mkBool True }
@@ -32,6 +40,8 @@ exp
   | SUCC exp { Succ $2 }
   | PRED exp { Pred $2 }
   | ISZERO exp { IsZero $2 }
+  | VAR '=' exp { Decl $1 $3 }
+  | VAR { Var $1 }
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a

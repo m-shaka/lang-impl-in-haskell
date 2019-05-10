@@ -4,11 +4,13 @@ module Lib
 
 import           Control.Monad (join)
 import           Parser
-import           Value         (eval)
+import           Value
 
 someFunc :: IO ()
 someFunc = do
   s <- getContents
-  let ast = parse s
-  print ast
-  print . join $ eval <$> ast
+  case parse s of
+   Left e    -> print e
+   Right ast -> do
+     print ast
+     evalProgram ast >>= print
