@@ -2,10 +2,13 @@ module Lib
     ( someFunc
     ) where
 
-import           AST    (eval)
+import           Control.Monad (join)
 import           Parser
+import           Value         (eval)
 
 someFunc :: IO ()
 someFunc = do
   s <- getContents
-  print $ eval <$> parse s
+  let ast = parse s
+  print ast
+  print . join $ eval <$> ast
