@@ -9,33 +9,64 @@ $alpha = [a-zA-Z]
 tokens :-
 
 $white ;
-[\;\n] { \_ _ -> pure TkSep }
-\= { \_ _ -> pure TkDecl }
-if { \_ _ -> pure TkIf }
-then { \_ _ -> pure TkThen }
-else { \_ _ -> pure TkElse }
-True { \_ _ -> pure TkTrue }
-False { \_ _ -> pure TkFalse }
-0 { \_ _ -> pure TkZero }
-succ { \_ _ -> pure TkSucc }
-pred { \_ _ -> pure TkPred }
-isZero { \_ _ -> pure TkIsZero }
-$alpha+ { \(pos, _, _, str) len -> let t = take len str in pure $ TkName t }
+[\;\n] { mkToken LxSep }
+\= { mkToken LxEq }
+if { mkToken LxIf }
+then { mkToken LxThen }
+else { mkToken LxElse }
+True { mkToken LxTrue }
+False { mkToken LxFalse }
+0 { mkToken LxZero }
+succ { mkToken LxSucc }
+pred { mkToken LxPred }
+isZero { mkToken LxIsZero }
+$alpha+ { mkToken LxName }
 
 {
+mkToken lx (pos, _, _, str) len =
+  let t = take len str in
+  case lx of
+    LxSep -> pure $ TkSep pos
+    LxEq -> pure $ TkEq pos
+    LxIf -> pure $ TkIf pos
+    LxThen -> pure $ TkThen pos
+    LxElse -> pure $ TkElse pos
+    LxTrue -> pure $ TkTrue pos
+    LxFalse -> pure $ TkFalse pos
+    LxZero -> pure $ TkZero pos
+    LxSucc -> pure $ TkSucc pos
+    LxPred -> pure $ TkPred pos
+    LxIsZero -> pure $ TkIsZero pos
+    LxName -> pure $ TkName (pos, t)
+
+data Lexeme
+  = LxSep
+  | LxEq
+  | LxIf
+  | LxThen
+  | LxElse
+  | LxTrue
+  | LxFalse
+  | LxZero
+  | LxSucc
+  | LxPred
+  | LxIsZero
+  | LxName
+  deriving (Eq, Show)
+
 data Token =
-  TkSep
-  | TkDecl
-  | TkIf
-  | TkThen
-  | TkElse
-  | TkTrue
-  | TkFalse
-  | TkZero
-  | TkSucc
-  | TkPred
-  | TkIsZero
-  | TkName String
+  TkSep AlexPosn
+  | TkEq AlexPosn
+  | TkIf AlexPosn
+  | TkThen AlexPosn
+  | TkElse AlexPosn
+  | TkTrue AlexPosn
+  | TkFalse AlexPosn
+  | TkZero AlexPosn
+  | TkSucc AlexPosn
+  | TkPred AlexPosn
+  | TkIsZero AlexPosn
+  | TkName (AlexPosn, String)
   | TkEof
   deriving (Show)
 

@@ -1,8 +1,14 @@
 module AST where
 
+import           Lexer
+
 type Name = String
 
-type Exp = Exp'
+type Position = (Int, Int)
+
+data Located a = Located Position a deriving (Show)
+
+type Exp = Located Exp'
 
 data Exp' =
   Var Name
@@ -19,8 +25,17 @@ data Lit =
   | Zero
   deriving (Show)
 
-mkBool :: Bool -> Exp
+mkBool :: Bool -> Exp'
 mkBool = Lit . LBool
 
-zero :: Exp
+zero :: Exp'
 zero = Lit Zero
+
+mkExp :: AlexPosn -> Exp' -> Exp
+mkExp (AlexPn _ line column) = Located (line, column)
+
+prettyPos :: Position -> String
+prettyPos (line, col) = show line <> ":" <> show col
+
+loc :: Exp -> Position
+loc (Located pos _) = pos

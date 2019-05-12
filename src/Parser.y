@@ -12,36 +12,41 @@ import AST
 %tokentype { Token }
 
 %token
-IF { TkIf }
-THEN { TkThen }
-ELSE { TkElse }
-TRUE { TkTrue }
-FALSE { TkFalse }
-ZERO { TkZero }
-SUCC { TkSucc }
-PRED { TkPred }
-ISZERO { TkIsZero }
-';' { TkSep }
-'=' { TkDecl }
+IF { TkIf $$ }
+THEN { TkThen $$ }
+ELSE { TkElse $$ }
+TRUE { TkTrue $$ }
+FALSE { TkFalse $$ }
+ZERO { TkZero $$ }
+SUCC { TkSucc $$ }
+PRED { TkPred $$ }
+ISZERO { TkIsZero $$ }
+';' { TkSep $$ }
+'=' { TkEq $$ }
 VAR { TkName $$ }
 
 %%
-exps :: { [Exp] }
-exps
-: exp { [$1] }
-| exp ';' exps { $1 : $3 }
+program :: { [Exp] }
+program
+  : exp  { [$1] }
+  | decl { [$1] }
+  | decl ';' program { $1 : $3 }
+  | exp ';' program { $1 : $3 }
+
+decl :: { Exp }
+decl
+  : VAR '=' exp { mkExp (fst $1) $ Decl (snd $1) $3 }
 
 exp :: { Exp }
 exp
-  : TRUE { mkBool True }
-  | FALSE { mkBool False }
-  | IF exp THEN exp ELSE exp { IfExp $2 $4 $6 }
-  | ZERO { zero }
-  | SUCC exp { Succ $2 }
-  | PRED exp { Pred $2 }
-  | ISZERO exp { IsZero $2 }
-  | VAR '=' exp { Decl $1 $3 }
-  | VAR { Var $1 }
+  : TRUE { mkExp $1 $ mkBool True }
+  | FALSE { mkExp $1 $ mkBool False }
+  | IF exp THEN exp ELSE exp { mkExp $1 $ IfExp $2 $4 $6 }
+  | ZERO { mkExp $1 zero }
+  | SUCC exp { mkExp $1 $ Succ $2 }
+  | PRED exp { mkExp $1 $ Pred $2 }
+  | ISZERO exp { mkExp $1 $ IsZero $2 }
+  | VAR { mkExp (fst $1) $ Var (snd $1) }
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a

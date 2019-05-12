@@ -13,4 +13,7 @@ someFunc = do
    Left e    -> print e
    Right ast -> do
      print ast
-     evalProgram ast >>= print
+     res <- evalProgram ast
+     case res of
+       Left e -> putStrLn e
+       r      -> print r
