@@ -16,7 +16,12 @@ data Value =
   VBool Bool
   | VNat Natural
   | VDecl
-  deriving (Show)
+
+instance Show Value where
+  show (VBool b) = show b
+  show (VNat n)  = show n
+  show VDecl     = "Declaration"
+
 
 type Env = MA.Map String Value
 
@@ -28,7 +33,7 @@ throwE' pos detail =
 
 
 eval :: Exp -> Eval Value
-eval (Located pos exp') = eval' exp'
+eval (Located pos exp) = eval' exp
   where
     eval' (Lit (LBool b)) = pure $ VBool b
     eval' (Lit Zero) = pure $ VNat 0
@@ -55,6 +60,7 @@ eval (Located pos exp') = eval' exp'
       case MA.lookup name env of
         Just v  -> pure v
         Nothing -> lift $ throwE' pos $ "UndefinedVariableError: " <> name
+    eval' (Lambda name exp') = undefined
 
 runEval :: Env -> Eval a -> IO (Either String a)
 runEval env ev = runExceptT (runStateT ev env) >>= \case

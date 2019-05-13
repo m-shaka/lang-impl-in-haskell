@@ -36,6 +36,7 @@ program
 decl :: { Exp }
 decl
   : VAR '=' exp { mkExp (fst $1) $ Decl (snd $1) $3 }
+  | VAR funcArgs '=' exp { mkExp (fst $1) $ Decl (snd $1) (mkLambda $2 $4) }
 
 exp :: { Exp }
 exp
@@ -47,6 +48,11 @@ exp
   | PRED exp { mkExp $1 $ Pred $2 }
   | ISZERO exp { mkExp $1 $ IsZero $2 }
   | VAR { mkExp (fst $1) $ Var (snd $1) }
+
+funcArgs :: { [VarInfo] }
+funcArgs
+  : VAR { [mkVarInfo $1] }
+  | VAR funcArgs { mkVarInfo $1 : $2 }
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a
