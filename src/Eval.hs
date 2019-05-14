@@ -66,10 +66,9 @@ eval (Located pos exp) = eval' exp
     eval' (Application (Located _ (Lambda name abst)) exp2) = do
       v <- eval exp2
       local (MA.insert name v) $ eval abst
-    eval' (Application exp1@(Located pos exp1'@(Var _)) exp2) = eval exp1 >>= \case
+    eval' (Application exp1@(Located pos exp1') exp2) = eval exp1 >>= \case
         VLambda name exp'-> eval' $ Application (Located pos (Lambda name exp')) exp2
         _ -> appError pos exp1'
-    eval' (Application (Located pos exp1) _) = appError pos exp1
 
     appError pos exp = lift $ throwE' pos $ "ApplicationError: " <> show exp <> " is not function. "
 

@@ -26,6 +26,10 @@ ISZERO { TkIsZero $$ }
 VARID { TkName $$ }
 '(' { TkLParen $$ }
 ')' { TkRParen $$ }
+'\\' { TkBSlash $$ }
+'->' { TkArrow $$ }
+
+%right LAMBDA
 
 %%
 program :: { [Exp] }
@@ -60,7 +64,13 @@ factor
   | TRUE { mkExp $1 $ mkBool True }
   | FALSE { mkExp $1 $ mkBool False }
   | ZERO { mkExp $1 zero }
+  | lambda { $1 }
   | '(' exp ')' { $2 }
+
+lambda :: { Exp }
+lambda
+  : '\\' '->' exp %prec LAMBDA { mkLambda [mkVarInfo $1] $3 }
+  | '\\' funcArgs '->' exp %prec LAMBDA { mkLambda (mkVarInfo $1 : $2) $4 }
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a

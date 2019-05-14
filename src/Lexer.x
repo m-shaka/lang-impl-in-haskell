@@ -8,14 +8,16 @@ $alpha = [a-zA-Z]
 
 tokens :-
 
-$white ;
+$white+ ;
 [\;\n] { mkToken LxSep }
 \= { mkToken LxEq }
 \( { mkToken LxLParen }
 \) { mkToken LxRParen }
+\\ $alpha+ { mkToken LxBSlash }
+\-\> { mkToken LxArrow }
 if { mkToken LxIf }
 then { mkToken LxThen }
-else { mkToken LxElse }
+aelse { mkToken LxElse }
 True { mkToken LxTrue }
 False { mkToken LxFalse }
 0 { mkToken LxZero }
@@ -31,7 +33,9 @@ mkToken lx (pos, _, _, str) len =
     LxSep -> pure $ TkSep pos
     LxEq -> pure $ TkEq pos
     LxLParen -> pure $ TkLParen pos
-    LxRParen -> pure $ TkRParen pos    
+    LxRParen -> pure $ TkRParen pos
+    LxBSlash -> pure $ TkBSlash (pos, tail t)
+    LxArrow -> pure $ TkArrow pos
     LxIf -> pure $ TkIf pos
     LxThen -> pure $ TkThen pos
     LxElse -> pure $ TkElse pos
@@ -48,6 +52,8 @@ data Lexeme
   | LxEq
   | LxLParen
   | LxRParen
+  | LxBSlash
+  | LxArrow
   | LxIf
   | LxThen
   | LxElse
@@ -65,6 +71,8 @@ data Token =
   | TkEq AlexPosn
   | TkLParen AlexPosn
   | TkRParen AlexPosn
+  | TkBSlash (AlexPosn, String)
+  | TkArrow AlexPosn
   | TkIf AlexPosn
   | TkThen AlexPosn
   | TkElse AlexPosn
