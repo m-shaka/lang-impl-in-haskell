@@ -42,13 +42,14 @@ mkLambda varInfo exp = foldr mk exp varInfo
 mkExp :: AlexPosn -> Exp' -> Exp
 mkExp pos = Located $ mkPos pos
 
+mkPos :: AlexPosn -> Position
 mkPos (AlexPn _ line column) = (line, column)
 
 mkVarInfo :: (AlexPosn, Name) -> VarInfo
 mkVarInfo (pos, name) = (mkPos pos, name)
 
 prettyPos :: Position -> String
-prettyPos (line, col) = show line <> ":" <> show col
+prettyPos (line, col) = "at line " <> show line <> ", column " <> show col
 
 loc :: Exp -> Position
 loc (Located pos _) = pos

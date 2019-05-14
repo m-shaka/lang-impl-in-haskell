@@ -30,7 +30,7 @@ type Eval a = RWST Env () Env (ExceptT String IO) a
 
 throwE' :: Position -> String -> ExceptT String IO a
 throwE' pos detail =
-  throwE $ "error in " <> prettyPos pos <> "\n" <> detail
+  throwE $ "error occurs " <> prettyPos pos <> "\n\t" <> detail
 
 
 eval :: Exp -> Eval Value
