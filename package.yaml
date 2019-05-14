@@ -41,7 +41,7 @@ executables:
 
 tests:
   test:
-    main:                Spec.hs
+    main:                Main.hs
     source-dirs:         test
     ghc-options:
     - -threaded
@@ -49,3 +49,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - lang-impl-in-haskell
+    - hspec

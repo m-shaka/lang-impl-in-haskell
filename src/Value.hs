@@ -61,6 +61,7 @@ eval (Located pos exp) = eval' exp
         Just v  -> pure v
         Nothing -> lift $ throwE' pos $ "UndefinedVariableError: " <> name
     eval' (Lambda name exp') = undefined
+    eval' (Application exp1 exp2) = undefined
 
 runEval :: Env -> Eval a -> IO (Either String a)
 runEval env ev = runExceptT (runStateT ev env) >>= \case
@@ -74,3 +75,4 @@ evalProgram' exps  = last <$> forM exps eval
 
 evalProgram :: [Exp] -> IO (Either String Value)
 evalProgram exps = runEval MA.empty (evalProgram' exps)
+

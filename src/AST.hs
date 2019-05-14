@@ -21,6 +21,7 @@ data Exp' =
   | IsZero Exp
   | Decl Name Exp
   | Lambda Name Exp
+  | Application Exp Exp
   deriving (Show)
 
 data Lit =

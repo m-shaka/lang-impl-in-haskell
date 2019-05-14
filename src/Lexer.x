@@ -11,6 +11,8 @@ tokens :-
 $white ;
 [\;\n] { mkToken LxSep }
 \= { mkToken LxEq }
+\( { mkToken LxLParen }
+\) { mkToken LxRParen }
 if { mkToken LxIf }
 then { mkToken LxThen }
 else { mkToken LxElse }
@@ -28,6 +30,8 @@ mkToken lx (pos, _, _, str) len =
   case lx of
     LxSep -> pure $ TkSep pos
     LxEq -> pure $ TkEq pos
+    LxLParen -> pure $ TkLParen pos
+    LxRParen -> pure $ TkRParen pos    
     LxIf -> pure $ TkIf pos
     LxThen -> pure $ TkThen pos
     LxElse -> pure $ TkElse pos
@@ -42,6 +46,8 @@ mkToken lx (pos, _, _, str) len =
 data Lexeme
   = LxSep
   | LxEq
+  | LxLParen
+  | LxRParen
   | LxIf
   | LxThen
   | LxElse
@@ -57,6 +63,8 @@ data Lexeme
 data Token =
   TkSep AlexPosn
   | TkEq AlexPosn
+  | TkLParen AlexPosn
+  | TkRParen AlexPosn
   | TkIf AlexPosn
   | TkThen AlexPosn
   | TkElse AlexPosn
