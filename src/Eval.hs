@@ -1,10 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Value (evalProgram) where
+module Eval (evalProgram) where
 
 import           AST
 import           Control.Monad              (forM, (>=>))
-import           Control.Monad.Identity
 import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Trans.Class  (lift)
 import           Control.Monad.Trans.Except

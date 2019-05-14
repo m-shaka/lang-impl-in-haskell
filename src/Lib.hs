@@ -3,8 +3,8 @@ module Lib
     ) where
 
 import           Control.Monad (join)
+import           Eval
 import           Parser
-import           Value
 
 someFunc :: IO ()
 someFunc = do
