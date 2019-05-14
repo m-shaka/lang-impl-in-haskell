@@ -15,13 +15,13 @@ data Value =
   VBool Bool
   | VNat Natural
   | VDecl
-  | VLambda Name Exp
+  | VLambda Env Name Exp
 
 instance Show Value where
-  show (VBool b)     = show b
-  show (VNat n)      = show n
-  show VDecl         = "Declaration"
-  show (VLambda _ _) = "function"
+  show (VBool b)       = show b
+  show (VNat n)        = show n
+  show VDecl           = "Declaration"
+  show (VLambda _ _ _) = "function"
 
 
 type Env = MA.Map String Value
@@ -62,12 +62,14 @@ eval (Located pos exp) = eval' exp
       case MA.lookup name $ MA.union localEnv env of
         Just v  -> pure v
         Nothing -> lift $ throwE' pos $ "UndefinedVariableError: " <> name
-    eval' (Lambda name exp') = pure $ VLambda name exp'
+    eval' (Lambda name exp') = do
+      env <- ask
+      pure $ VLambda env name exp'
     eval' (Application (Located _ (Lambda name abst)) exp2) = do
       v <- eval exp2
       local (MA.insert name v) $ eval abst
     eval' (Application exp1@(Located pos exp1') exp2) = eval exp1 >>= \case
-        VLambda name exp'-> eval' $ Application (Located pos (Lambda name exp')) exp2
+        VLambda env name exp'-> local (const env) $ eval' $ Application (Located pos (Lambda name exp')) exp2
         _ -> appError pos exp1'
 
     appError pos exp = lift $ throwE' pos $ "ApplicationError: " <> show exp <> " is not function. "
