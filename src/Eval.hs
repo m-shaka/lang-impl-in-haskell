@@ -13,13 +13,13 @@ import           GHC.Natural                (Natural)
 
 data Value =
   VBool Bool
-  | VNat Natural
+  | VInt Int
   | VDecl
   | VLambda Name Exp deriving (Eq)
 
 instance Show Value where
   show (VBool b) = show b
-  show (VNat n)  = show n
+  show (VInt n)  = show n
   show VDecl     = "Declaration"
   show VLambda{} = "function"
 
@@ -36,20 +36,19 @@ eval :: Exp -> Eval Value
 eval (Located pos exp) = eval' exp
   where
     eval' (Lit (LBool b)) = pure $ VBool b
-    eval' (Lit Zero) = pure $ VNat 0
+    eval' (Lit (LInt i)) = pure $ VInt i
     eval' (IfExp cond x y) = eval cond >>= \case
       VBool b -> eval $ if b then x else y
       v -> lift $ throwE' (loc cond) $ "TypeError: " <> show v <> " is not boolean. "
     eval' (Succ n) = eval n >>= \case
-      VNat n' -> pure . VNat $ n' + 1
+      VInt n' -> pure . VInt $ n' + 1
       v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    eval' (Pred (Located _ (Lit Zero))) = pure $ VNat 0
+    eval' (Pred (Located _ (Lit (LInt 0)))) = pure $ VInt 0
     eval' (Pred n) = eval n >>= \case
-      VNat n' -> pure . VNat $ n' - 1
+      VInt n' -> pure . VInt $ n' - 1
       v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    eval' (IsZero (Located _ (Lit Zero))) = pure $ VBool True
     eval' (IsZero n) = eval n >>= \case
-      VNat n' -> pure $ VBool $ n' == 0
+      VInt n' -> pure $ VBool $ n' == 0
       v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
     eval' (Decl n exp) = eval exp >>= \v -> do
       env <- get

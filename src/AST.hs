@@ -26,14 +26,14 @@ data Exp' =
 
 data Lit =
   LBool Bool
-  | Zero
+  | LInt Int
   deriving (Show, Eq)
 
 mkBool :: Bool -> Exp'
 mkBool = Lit . LBool
 
-zero :: Exp'
-zero = Lit Zero
+mkInt :: Int -> Exp'
+mkInt = Lit . LInt
 
 mkLambda :: [VarInfo] -> Exp -> Exp
 mkLambda varInfo exp = foldr mk exp varInfo

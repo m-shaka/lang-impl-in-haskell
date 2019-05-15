@@ -17,7 +17,7 @@ THEN { TkThen $$ }
 ELSE { TkElse $$ }
 TRUE { TkTrue $$ }
 FALSE { TkFalse $$ }
-ZERO { TkZero $$ }
+INT { TkInt $$ }
 SUCC { TkSucc $$ }
 PRED { TkPred $$ }
 ISZERO { TkIsZero $$ }
@@ -69,7 +69,7 @@ factor
   : VARID { mkExp (fst $1) $ Var (snd $1) }
   | TRUE { mkExp $1 $ mkBool True }
   | FALSE { mkExp $1 $ mkBool False }
-  | ZERO { mkExp $1 zero }
+  | INT { mkExp (fst $1) $ mkInt (snd $1)  }
   | '(' exp ')' { $2 }
 
 lambda :: { Exp }

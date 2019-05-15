@@ -5,6 +5,7 @@ module Lexer where
 %wrapper "monadUserState"
 
 $alpha = [a-zA-Z]
+$digit = [0-9]
 
 tokens :-
 
@@ -20,7 +21,7 @@ then { mkToken LxThen }
 else { mkToken LxElse }
 True { mkToken LxTrue }
 False { mkToken LxFalse }
-0 { mkToken LxZero }
+$digit+ { mkToken LxInt }
 succ { mkToken LxSucc }
 pred { mkToken LxPred }
 isZero { mkToken LxIsZero }
@@ -41,7 +42,7 @@ mkToken lx (pos, _, _, str) len =
     LxElse -> pure $ TkElse pos
     LxTrue -> pure $ TkTrue pos
     LxFalse -> pure $ TkFalse pos
-    LxZero -> pure $ TkZero pos
+    LxInt -> pure $ TkInt (pos, read t)
     LxSucc -> pure $ TkSucc pos
     LxPred -> pure $ TkPred pos
     LxIsZero -> pure $ TkIsZero pos
@@ -59,7 +60,7 @@ data Lexeme
   | LxElse
   | LxTrue
   | LxFalse
-  | LxZero
+  | LxInt
   | LxSucc
   | LxPred
   | LxIsZero
@@ -78,7 +79,7 @@ data Token =
   | TkElse AlexPosn
   | TkTrue AlexPosn
   | TkFalse AlexPosn
-  | TkZero AlexPosn
+  | TkInt (AlexPosn, Int)
   | TkSucc AlexPosn
   | TkPred AlexPosn
   | TkIsZero AlexPosn
