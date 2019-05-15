@@ -13,11 +13,11 @@ $white+ ;
 \= { mkToken LxEq }
 \( { mkToken LxLParen }
 \) { mkToken LxRParen }
-\\ $alpha+ { mkToken LxBSlash }
+\\ $white* $alpha+ { mkToken LxBSlash }
 \-\> { mkToken LxArrow }
 if { mkToken LxIf }
 then { mkToken LxThen }
-aelse { mkToken LxElse }
+else { mkToken LxElse }
 True { mkToken LxTrue }
 False { mkToken LxFalse }
 0 { mkToken LxZero }
@@ -34,7 +34,7 @@ mkToken lx (pos, _, _, str) len =
     LxEq -> pure $ TkEq pos
     LxLParen -> pure $ TkLParen pos
     LxRParen -> pure $ TkRParen pos
-    LxBSlash -> pure $ TkBSlash (pos, tail t)
+    LxBSlash -> pure $ TkBSlash (pos, tail . filter (/=' ') $ t)
     LxArrow -> pure $ TkArrow pos
     LxIf -> pure $ TkIf pos
     LxThen -> pure $ TkThen pos

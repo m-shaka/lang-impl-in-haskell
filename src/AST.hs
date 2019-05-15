@@ -8,7 +8,7 @@ type Position = (Int, Int)
 
 type VarInfo = (Position, Name)
 
-data Located a = Located Position a deriving (Show)
+data Located a = Located Position a deriving (Show, Eq)
 
 type Exp = Located Exp'
 
@@ -21,13 +21,13 @@ data Exp' =
   | IsZero Exp
   | Decl Name Exp
   | Lambda Name Exp
-  | Application Exp Exp
-  deriving (Show)
+  | Application Exp [Exp]
+  deriving (Show, Eq)
 
 data Lit =
   LBool Bool
   | Zero
-  deriving (Show)
+  deriving (Show, Eq)
 
 mkBool :: Bool -> Exp'
 mkBool = Lit . LBool

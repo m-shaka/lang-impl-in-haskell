@@ -30,6 +30,7 @@ VARID { TkName $$ }
 '->' { TkArrow $$ }
 
 %right LAMBDA
+%left APP
 
 %%
 program :: { [Exp] }
@@ -42,12 +43,16 @@ program
 decl :: { Exp }
 decl
   : VARID '=' exp { mkExp (fst $1) $ Decl (snd $1) $3 }
-  | VARID funcArgs '=' exp { mkExp (fst $1) $ Decl (snd $1) (mkLambda $2 $4) }
+  | VARID funcDefArgs '=' exp { mkExp (fst $1) $ Decl (snd $1) (mkLambda $2 $4) }
 
-funcArgs :: { [VarInfo] }
-funcArgs
+funcDefArgs :: { [VarInfo] }
+funcDefArgs
   : VARID { [mkVarInfo $1] }
-  | VARID funcArgs { mkVarInfo $1 : $2 }
+  | VARID funcDefArgs { mkVarInfo $1 : $2 }
+
+actualArgs
+  : factor { [$1] }
+  | factor actualArgs { $1 : $2 }
 
 exp :: { Exp }
 exp
@@ -56,7 +61,8 @@ exp
   | SUCC factor { mkExp $1 $ Succ $2 }
   | PRED factor { mkExp $1 $ Pred $2 }
   | ISZERO factor { mkExp $1 $ IsZero $2 }
-  | factor factor { Located (loc $1) (Application $1 $2) }
+  | lambda { $1 }
+  | factor actualArgs %prec APP { Located (loc $1) (Application $1 $2) }
 
 factor :: { Exp }
 factor
@@ -64,13 +70,12 @@ factor
   | TRUE { mkExp $1 $ mkBool True }
   | FALSE { mkExp $1 $ mkBool False }
   | ZERO { mkExp $1 zero }
-  | lambda { $1 }
   | '(' exp ')' { $2 }
 
 lambda :: { Exp }
 lambda
   : '\\' '->' exp %prec LAMBDA { mkLambda [mkVarInfo $1] $3 }
-  | '\\' funcArgs '->' exp %prec LAMBDA { mkLambda (mkVarInfo $1 : $2) $4 }
+  | '\\' funcDefArgs '->' exp %prec LAMBDA { mkLambda (mkVarInfo $1 : $2) $4 }
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a
