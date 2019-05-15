@@ -19,6 +19,7 @@ data Exp' =
   | Succ Exp
   | Pred Exp
   | IsZero Exp
+  | BinOp BinOp Exp Exp
   | Decl Name Exp
   | Lambda Name Exp
   | Application Exp [Exp]
@@ -28,6 +29,8 @@ data Lit =
   LBool Bool
   | LInt Int
   deriving (Show, Eq)
+
+data BinOp = Plus | Minus | Multi | Div deriving(Show, Eq)
 
 mkBool :: Bool -> Exp'
 mkBool = Lit . LBool

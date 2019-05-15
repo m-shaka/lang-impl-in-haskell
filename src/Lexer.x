@@ -16,6 +16,10 @@ $white+ ;
 \) { mkToken LxRParen }
 \\ $white* $alpha+ { mkToken LxBSlash }
 \-\> { mkToken LxArrow }
+"+" { mkToken LxPlus }
+"-" { mkToken LxMinus }
+"*" { mkToken LxMulti }
+"/" { mkToken LxDiv }
 if { mkToken LxIf }
 then { mkToken LxThen }
 else { mkToken LxElse }
@@ -37,6 +41,10 @@ mkToken lx (pos, _, _, str) len =
     LxRParen -> pure $ TkRParen pos
     LxBSlash -> pure $ TkBSlash (pos, tail . filter (/=' ') $ t)
     LxArrow -> pure $ TkArrow pos
+    LxPlus -> pure $ TkBinOp $ (pos, TkPlus)
+    LxMinus -> pure $ TkBinOp $ (pos, TkMinus)
+    LxMulti -> pure $ TkBinOp $ (pos, TkMulti)
+    LxDiv -> pure $ TkBinOp $ (pos, TkDiv)
     LxIf -> pure $ TkIf pos
     LxThen -> pure $ TkThen pos
     LxElse -> pure $ TkElse pos
@@ -55,6 +63,10 @@ data Lexeme
   | LxRParen
   | LxBSlash
   | LxArrow
+  | LxPlus
+  | LxMinus
+  | LxMulti
+  | LxDiv
   | LxIf
   | LxThen
   | LxElse
@@ -67,6 +79,8 @@ data Lexeme
   | LxName
   deriving (Eq, Show)
 
+data TkBinOp = TkPlus | TkMinus | TkMulti | TkDiv deriving(Eq, Show)
+
 data Token =
   TkSep AlexPosn
   | TkEq AlexPosn
@@ -74,6 +88,7 @@ data Token =
   | TkRParen AlexPosn
   | TkBSlash (AlexPosn, String)
   | TkArrow AlexPosn
+  | TkBinOp (AlexPosn, TkBinOp)
   | TkIf AlexPosn
   | TkThen AlexPosn
   | TkElse AlexPosn

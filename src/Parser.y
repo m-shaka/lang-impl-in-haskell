@@ -28,14 +28,22 @@ VARID { TkName $$ }
 ')' { TkRParen $$ }
 '\\' { TkBSlash $$ }
 '->' { TkArrow $$ }
+'+' { TkBinOp ($$, TkPlus) }
+'-' { TkBinOp ($$, TkMinus) }
+'*' { TkBinOp ($$, TkMulti) }
+'/' { TkBinOp ($$, TkDiv) }
 
-%right LAMBDA
-%left APP
+%right precIf
+%left '+' '-'
+%left '*' '/'
+%right lambdaPrec
+%left appPrec
+%nonassoc expPrec
 
 %%
 program :: { [Exp] }
 program
-  : exp { [$1] }
+  : exp %prec expPrec { [$1] }
   | decl { [$1] }
   | exp ';' program { $1 : $3 }
   | decl ';' program { $1 : $3 }
@@ -57,12 +65,13 @@ actualArgs
 exp :: { Exp }
 exp
   : factor { $1 }
-  | IF exp THEN exp ELSE exp { mkExp $1 $ IfExp $2 $4 $6 }
+  | IF exp THEN exp ELSE exp %prec precIf { mkExp $1 $ IfExp $2 $4 $6 }
   | SUCC factor { mkExp $1 $ Succ $2 }
   | PRED factor { mkExp $1 $ Pred $2 }
   | ISZERO factor { mkExp $1 $ IsZero $2 }
   | lambda { $1 }
-  | factor actualArgs %prec APP { Located (loc $1) (Application $1 $2) }
+  | factor actualArgs %prec appPrec { Located (loc $1) (Application $1 $2) }
+  | binOp { $1 }
 
 factor :: { Exp }
 factor
@@ -74,8 +83,16 @@ factor
 
 lambda :: { Exp }
 lambda
-  : '\\' '->' exp %prec LAMBDA { mkLambda [mkVarInfo $1] $3 }
-  | '\\' funcDefArgs '->' exp %prec LAMBDA { mkLambda (mkVarInfo $1 : $2) $4 }
+  : '\\' '->' exp %prec lambdaPrec { mkLambda [mkVarInfo $1] $3 }
+  | '\\' funcDefArgs '->' exp %prec lambdaPrec { mkLambda (mkVarInfo $1 : $2) $4 }
+
+binOp :: { Exp }
+binOp
+  : exp '+' exp { Located (loc $1) $ BinOp Plus $1 $3 }
+  | exp '-' exp { Located (loc $1) $ BinOp Minus $1 $3 }
+  | exp '*' exp { Located (loc $1) $ BinOp Multi $1 $3 }
+  | exp '/' exp { Located (loc $1) $ BinOp Div $1 $3 }
+
 
 {
 lexwrap :: (Token -> Alex a) -> Alex a
