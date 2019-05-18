@@ -41,17 +41,17 @@ VARID { TkName $$ }
 %nonassoc expPrec
 
 %%
-program :: { [Exp] }
+program :: { Program }
 program
-  : exp %prec expPrec { [$1] }
+  : exp %prec expPrec { [Exp $1] }
   | decl { [$1] }
-  | exp ';' program { $1 : $3 }
+  | exp ';' program { Exp $1 : $3 }
   | decl ';' program { $1 : $3 }
 
-decl :: { Exp }
+decl :: { Statement }
 decl
-  : VARID '=' exp { mkExp (fst $1) $ Decl (snd $1) $3 }
-  | VARID funcDefArgs '=' exp { mkExp (fst $1) $ Decl (snd $1) (mkLambda $2 $4) }
+  : VARID '=' exp { mkDecl $1 $3 }
+  | VARID funcDefArgs '=' exp { mkDecl $1 $ mkLambda $2 $4 }
 
 funcDefArgs :: { [VarInfo] }
 funcDefArgs

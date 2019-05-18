@@ -14,14 +14,14 @@ import           GHC.Natural                (Natural)
 data Value =
   VBool Bool
   | VInt Int
-  | VDecl
-  | VLambda Name Exp deriving (Eq)
+  | VLambda Name Exp
+  | VDecl deriving (Eq)
 
 instance Show Value where
   show (VBool b) = show b
   show (VInt n)  = show n
-  show VDecl     = "Declaration"
-  show VLambda{} = "function"
+  show VLambda{} = "<<function>>"
+  show _         = ""
 
 type Env = MA.Map String Value
 
@@ -50,10 +50,6 @@ eval (Located pos exp) = eval' exp
     eval' (IsZero n) = eval n >>= \case
       VInt n' -> pure $ VBool $ n' == 0
       v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    eval' (Decl n exp) = eval exp >>= \v -> do
-      env <- get
-      put $ MA.insert n v env
-      pure VDecl
     eval' (Var name) = do
       env <- get
       localEnv <- ask
@@ -92,8 +88,12 @@ runEval env ev = runExceptT (runRWST ev env env) >>= \case
     Right (v, _, _) -> pure $ Right v
     Left e -> pure $ Left e
 
-evalProgram' :: [Exp] -> Eval Value
-evalProgram' []    = fail "There is no expression. "
-evalProgram' [exp] = eval exp
-evalProgram' exps  = last <$> forM exps eval
+evalStatement (Decl pos name exp) = do
+  v <- eval exp
+  get >>= \env -> put $ MA.insert name v env
+  pure VDecl
+evalStatement (Exp exp) = eval exp
+
+evalProgram' :: Program -> Eval Value
+evalProgram' p = last <$> forM p evalStatement
 

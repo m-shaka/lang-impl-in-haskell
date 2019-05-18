@@ -6,6 +6,8 @@ type Name = String
 
 type Position = (Int, Int)
 
+data VarPos = Pos Position | Dummy deriving(Show, Eq)
+
 type VarInfo = (Position, Name)
 
 data Located a = Located Position a deriving (Show, Eq)
@@ -20,7 +22,6 @@ data Exp' =
   | Pred Exp
   | IsZero Exp
   | BinOp BinOp Exp Exp
-  | Decl Name Exp
   | Lambda Name Exp
   | Application Exp [Exp]
   deriving (Show, Eq)
@@ -31,6 +32,13 @@ data Lit =
   deriving (Show, Eq)
 
 data BinOp = Plus | Minus | Multi | Div deriving(Show, Eq)
+
+data Statement=
+  Decl VarPos Name Exp
+  | Exp Exp
+  deriving(Show)
+
+type Program = [Statement]
 
 mkBool :: Bool -> Exp'
 mkBool = Lit . LBool
@@ -44,6 +52,11 @@ mkLambda varInfo exp = foldr mk exp varInfo
 
 mkExp :: AlexPosn -> Exp' -> Exp
 mkExp pos = Located $ mkPos pos
+
+mkDecl :: (AlexPosn, Name) -> Exp -> Statement
+mkDecl posname =
+  let (pos, name) = mkVarInfo posname in
+  Decl (Pos pos) name
 
 mkPos :: AlexPosn -> Position
 mkPos (AlexPn _ line column) = (line, column)

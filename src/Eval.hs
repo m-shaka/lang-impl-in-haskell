@@ -5,5 +5,5 @@ import           Eval.Core
 
 import qualified Data.Map  as MA
 
-evalProgram :: [Exp] -> IO (Either String Value)
-evalProgram exps = runEval MA.empty (evalProgram' exps)
+evalProgram :: Program -> IO (Either String Value)
+evalProgram p = runEval MA.empty (evalProgram' p)
