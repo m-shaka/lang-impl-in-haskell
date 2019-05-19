@@ -36,7 +36,7 @@ data BinOp = Plus | Minus | Multi | Div deriving(Show, Eq)
 data Statement=
   Decl VarPos Name Exp
   | Exp Exp
-  deriving(Show)
+  deriving (Show, Eq)
 
 type Program = [Statement]
 
@@ -69,3 +69,4 @@ prettyPos (line, col) = "at line " <> show line <> ", column " <> show col
 
 loc :: Exp -> Position
 loc (Located pos _) = pos
+

@@ -66,7 +66,7 @@ eval (Located pos exp) = eval' exp
       v <- eval fstArg
       local (MA.insert name v) $ eval' $ Application abst restArgs
     eval' (Application exp1@(Located pos exp1') exp2) = eval exp1 >>= \case
-        VLambda localEnv name exp'-> local (const localEnv) $ eval' $ Application (Located pos (Lambda name exp')) exp2
+        VLambda localEnv name exp'-> local (`MA.union` localEnv) $ eval' $ Application (Located pos (Lambda name exp')) exp2
         badValue -> lift $ throwE' pos $ "ApplicationError: " <> show badValue <> " is not function. "
     eval' (BinOp op exp1 exp2) = evalBinOp op exp1 exp2
 
