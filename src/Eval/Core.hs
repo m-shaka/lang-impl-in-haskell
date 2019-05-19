@@ -14,7 +14,7 @@ import           GHC.Natural                (Natural)
 data Value =
   VBool Bool
   | VInt Int
-  | VLambda Name Exp
+  | VLambda Env Name Exp
   | VDecl deriving (Eq)
 
 instance Show Value where
@@ -56,7 +56,9 @@ eval (Located pos exp) = eval' exp
       case MA.lookup name $ MA.union localEnv env of
         Just v  -> pure v
         Nothing -> lift $ throwE' pos $ "UndefinedVariableError: " <> name
-    eval' (Lambda name exp') = pure $ VLambda name exp'
+    eval' (Lambda name exp') = do
+      localEnv <- ask
+      pure $ VLambda localEnv name exp'
     eval' (Application (Located _ (Lambda name abst)) [arg]) = do
       v <- eval arg
       local (MA.insert name v) $ eval abst
@@ -64,7 +66,7 @@ eval (Located pos exp) = eval' exp
       v <- eval fstArg
       local (MA.insert name v) $ eval' $ Application abst restArgs
     eval' (Application exp1@(Located pos exp1') exp2) = eval exp1 >>= \case
-        VLambda name exp'-> eval' $ Application (Located pos (Lambda name exp')) exp2
+        VLambda localEnv name exp'-> local (const localEnv) $ eval' $ Application (Located pos (Lambda name exp')) exp2
         badValue -> lift $ throwE' pos $ "ApplicationError: " <> show badValue <> " is not function. "
     eval' (BinOp op exp1 exp2) = evalBinOp op exp1 exp2
 
