@@ -83,8 +83,7 @@ factor
 
 lambda :: { Exp }
 lambda
-  : '\\' '->' exp %prec lambdaPrec { mkLambda [mkVarInfo $1] $3 }
-  | '\\' funcDefArgs '->' exp %prec lambdaPrec { mkLambda (mkVarInfo $1 : $2) $4 }
+  : '\\' funcDefArgs '->' exp %prec lambdaPrec { mkLambda $2 $4 }
 
 binOp :: { Exp }
 binOp

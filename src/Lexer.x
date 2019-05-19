@@ -10,26 +10,26 @@ $digit = [0-9]
 tokens :-
 
 $white+ ;
-[\;\n] { mkToken LxSep }
-\= { mkToken LxEq }
-\( { mkToken LxLParen }
-\) { mkToken LxRParen }
-\\ $white* $alpha+ { mkToken LxBSlash }
-\-\> { mkToken LxArrow }
-"+" { mkToken LxPlus }
-"-" { mkToken LxMinus }
-"*" { mkToken LxMulti }
-"/" { mkToken LxDiv }
-if { mkToken LxIf }
-then { mkToken LxThen }
-else { mkToken LxElse }
-True { mkToken LxTrue }
-False { mkToken LxFalse }
-$digit+ { mkToken LxInt }
-succ { mkToken LxSucc }
-pred { mkToken LxPred }
-isZero { mkToken LxIsZero }
-$alpha+ { mkToken LxName }
+<0> [\;\n] { mkToken LxSep }
+<0> \= { mkToken LxEq }
+<0> \( { mkToken LxLParen }
+<0> \) { mkToken LxRParen }
+<0> \\ { mkToken LxBSlash }
+<0> \-\> { mkToken LxArrow }
+<0> "+" { mkToken LxPlus }
+<0> "-" { mkToken LxMinus }
+<0> "*" { mkToken LxMulti }
+<0> "/" { mkToken LxDiv }
+<0> if { mkToken LxIf }
+<0> then { mkToken LxThen }
+<0> else { mkToken LxElse }
+<0> True { mkToken LxTrue }
+<0> False { mkToken LxFalse }
+<0> $digit+ { mkToken LxInt }
+<0> succ { mkToken LxSucc }
+<0> pred { mkToken LxPred }
+<0> isZero { mkToken LxIsZero }
+<0> $alpha+ { mkToken LxName }
 
 {
 mkToken lx (pos, _, _, str) len =
@@ -39,7 +39,7 @@ mkToken lx (pos, _, _, str) len =
     LxEq -> pure $ TkEq pos
     LxLParen -> pure $ TkLParen pos
     LxRParen -> pure $ TkRParen pos
-    LxBSlash -> pure $ TkBSlash (pos, tail . filter (/=' ') $ t)
+    LxBSlash -> pure $ TkBSlash pos
     LxArrow -> pure $ TkArrow pos
     LxPlus -> pure $ TkBinOp $ (pos, TkPlus)
     LxMinus -> pure $ TkBinOp $ (pos, TkMinus)
@@ -86,7 +86,7 @@ data Token =
   | TkEq AlexPosn
   | TkLParen AlexPosn
   | TkRParen AlexPosn
-  | TkBSlash (AlexPosn, String)
+  | TkBSlash AlexPosn
   | TkArrow AlexPosn
   | TkBinOp (AlexPosn, TkBinOp)
   | TkIf AlexPosn
