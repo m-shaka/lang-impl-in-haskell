@@ -1,22 +1,17 @@
-module Eval.Primitives where
+module Eval.Primitives(primitives) where
 
-import           Eval.Core
+import           Eval.Combinators
+import           Eval.Value
 
 import           Control.Monad.IO.Class (liftIO)
+
 import qualified Data.Map               as MA
 
 primitives :: MA.Map String Value
 primitives = MA.fromList
-  [ ("$I", VLambda pure)
-  , ("$K", VLambda $ \x -> pure . VLambda $ \_ -> pure x)
-  , ("$S", VLambda $
-      \f -> pure . VLambda $
-            \g -> pure . VLambda $
-                  \x -> do
-                    f' <- f!x
-                    g' <- g!x
-                    f'!g'
-    )
+  [ ("$I", combI_)
+  , ("$K", combK_)
+  , ("$S", combS_)
   , ("print", print_)
   ]
 

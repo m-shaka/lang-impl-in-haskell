@@ -3,6 +3,9 @@
 module Eval.Core where
 
 import           AST
+import           Eval.Combinators
+import           Eval.Value
+
 import           Control.Applicative        (liftA2)
 import           Control.Monad              (forM, (>=>))
 import           Control.Monad.IO.Class     (liftIO)
@@ -13,24 +16,6 @@ import qualified Data.Map                   as MA
 import           Data.Maybe                 (fromJust)
 import           GHC.Natural                (Natural)
 
-data Value =
-  VVar Name
-  | VBool Bool
-  | VInt Int
-  | VLambda (Value -> Eval Value)
-  | VApp Value Value
-  | VDecl
-
-instance Show Value where
-  show (VBool b) = show b
-  show (VInt n)  = show n
-  show VLambda{} = "<<function>>"
-  show VApp{}    = "<<application>>"
-  show _         = ""
-
-type Env = MA.Map String Value
-
-type Eval a = RWST Env () Env (ExceptT String IO) a
 
 throwE' :: Position -> String -> ExceptT String IO a
 throwE' pos detail =
@@ -38,8 +23,7 @@ throwE' pos detail =
 
 
 compile :: Exp -> Eval Value
-compile (Located pos exp) = do
-  compile' exp
+compile (Located pos exp) = compile' exp
   where
     compile' (Lit (LBool b)) = pure $ VBool b
     compile' (Lit (LInt i)) = pure $ VInt i
@@ -75,10 +59,6 @@ compileBinOp op exp1 exp2 = do
     (VInt _, badValue) -> lift $ throwE' (loc exp2) $ "TypeError: " <> show badValue <> " is not natural number. "
     (badValue, _) -> lift $ throwE' (loc exp1) $ "TypeError: " <> show badValue <> " is not natural number. "
 
-infixl 0 !
-(!) :: Value -> Value -> Eval Value
-VLambda f ! x = f x
-_ ! _ = lift $ throwE "ApplicationError"
 
 link :: Value -> Eval Value
 link (VApp fun arg) = do
@@ -94,13 +74,13 @@ abstract x (VVar n)       | x == n = combI
 abstract _ k              = combK k
 
 combS :: Value -> Value -> Value
-combS f = VApp (VApp (VVar "$S") f)
+combS f = VApp (VApp combS_ f)
 
 combK :: Value -> Value
-combK = VApp (VVar "$K")
+combK = VApp combK_
 
 combI :: Value
-combI = VVar "$I"
+combI = combI_
 
 runEval :: Env -> Eval a -> IO (Either String a)
 runEval env ev = runExceptT (runRWST ev env env) >>= \case

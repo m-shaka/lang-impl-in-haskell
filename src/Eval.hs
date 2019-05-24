@@ -3,6 +3,7 @@ module Eval(evalProgram) where
 import           AST
 import           Eval.Core
 import           Eval.Primitives
+import           Eval.Value      (Value)
 
 import qualified Data.Map        as MA
 
