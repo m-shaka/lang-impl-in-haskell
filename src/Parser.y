@@ -70,7 +70,7 @@ exp
   | PRED factor { mkExp $1 $ Pred $2 }
   | ISZERO factor { mkExp $1 $ IsZero $2 }
   | lambda { $1 }
-  | factor actualArgs %prec appPrec { Located (loc $1) (Application $1 $2) }
+  | factor actualArgs %prec appPrec { mkApp $1 $2 }
   | binOp { $1 }
 
 factor :: { Exp }

@@ -25,12 +25,12 @@ prettyExp (Located _ (BinOp op x y)) tabCount =
   in intercalate "\n" (root:children)
 prettyExp (Located _ (Lambda n e)) tabCount =
   genTab tabCount ++ "Lambda " ++ n ++ "\n" ++ prettyExp e (tabCount + 1)
-prettyExp (Located _ (Application f exps)) tabCount =
+prettyExp (Located _ (Application f exp)) tabCount =
   let
     root = genTab tabCount ++ "Application"
     func = prettyExp f (tabCount + 1)
-    args = intercalate ",\n" $ fmap (`prettyExp` (tabCount + 2)) exps
-  in intercalate "\n" [root, func, args]
+    arg =  prettyExp exp (tabCount + 2)
+  in intercalate "\n" [root, func, arg]
 prettyExp (Located _ e) tabCount = genTab tabCount ++ show e
 
 prettyStatement :: Statement -> String

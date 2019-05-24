@@ -23,7 +23,7 @@ data Exp' =
   | IsZero Exp
   | BinOp BinOp Exp Exp
   | Lambda Name Exp
-  | Application Exp [Exp]
+  | Application Exp Exp
   deriving (Show, Eq)
 
 data Lit =
@@ -49,6 +49,10 @@ mkInt = Lit . LInt
 mkLambda :: [VarInfo] -> Exp -> Exp
 mkLambda varInfo exp = foldr mk exp varInfo
   where mk (pos, name) exp' = Located pos $ Lambda name exp'
+
+mkApp :: Exp -> [Exp] -> Exp
+mkApp = foldr mk
+  where mk arg f' = Located (loc f') $ Application f' arg
 
 mkExp :: AlexPosn -> Exp' -> Exp
 mkExp pos = Located $ mkPos pos
