@@ -17,7 +17,7 @@ data Value =
   VVar Name
   | VBool Bool
   | VInt Int
-  | VLambda (Value -> Value)
+  | VLambda (Value -> Eval Value)
   | VApp Value Value
   | VDecl
 
@@ -38,7 +38,8 @@ throwE' pos detail =
 
 
 compile :: Exp -> Eval Value
-compile (Located pos exp) = compile' exp
+compile (Located pos exp) = do
+  compile' exp
   where
     compile' (Lit (LBool b)) = pure $ VBool b
     compile' (Lit (LInt i)) = pure $ VInt i
@@ -75,11 +76,15 @@ compileBinOp op exp1 exp2 = do
     (badValue, _) -> lift $ throwE' (loc exp1) $ "TypeError: " <> show badValue <> " is not natural number. "
 
 infixl 0 !
-(!) :: Value -> Value -> Value
+(!) :: Value -> Value -> Eval Value
 VLambda f ! x = f x
+_ ! _ = lift $ throwE "ApplicationError"
 
 link :: Value -> Eval Value
-link (VApp fun arg) = liftA2 (!) (link fun) (link arg)
+link (VApp fun arg) = do
+  f' <- link fun
+  arg' <- link arg
+  f' ! arg'
 link (VVar n)       = fromJust . MA.lookup n <$> get
 link e              = pure e
 
