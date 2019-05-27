@@ -18,9 +18,6 @@ ELSE { TkElse $$ }
 TRUE { TkTrue $$ }
 FALSE { TkFalse $$ }
 INT { TkInt $$ }
-SUCC { TkSucc $$ }
-PRED { TkPred $$ }
-ISZERO { TkIsZero $$ }
 ';' { TkSep $$ }
 '=' { TkEq $$ }
 VARID { TkName $$ }
@@ -66,9 +63,6 @@ exp :: { Exp }
 exp
   : factor { $1 }
   | IF exp THEN exp ELSE exp %prec precIf { mkExp $1 $ IfExp $2 $4 $6 }
-  | SUCC factor { mkExp $1 $ Succ $2 }
-  | PRED factor { mkExp $1 $ Pred $2 }
-  | ISZERO factor { mkExp $1 $ IsZero $2 }
   | lambda { $1 }
   | factor actualArgs %prec appPrec { mkApp $1 $2 }
   | binOp { $1 }

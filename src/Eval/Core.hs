@@ -21,57 +21,53 @@ throwE' :: Position -> String -> ExceptT String IO a
 throwE' pos detail =
   throwE $ "error occurs " <> prettyPos pos <> "\n\t" <> detail
 
-
-compile :: Exp -> Eval Value
-compile (Located pos exp) = compile' exp
+compile :: Exp -> Eval LocVal
+compile exp@(Located pos exp') = compile' exp'
   where
-    compile' (Lit (LBool b)) = pure $ VBool b
-    compile' (Lit (LInt i)) = pure $ VInt i
-    compile' (IfExp cond x y) = compile cond >>= \case
-      VBool b -> compile $ if b then x else y
-      v -> lift $ throwE' (loc cond) $ "TypeError: " <> show v <> " is not boolean. "
-    compile' (Succ n) = compile n >>= \case
-      VInt n' -> pure . VInt $ n' + 1
-      v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    compile' (Pred (Located _ (Lit (LInt 0)))) = pure $ VInt 0
-    compile' (Pred n) = compile n >>= \case
-      VInt n' -> pure . VInt $ n' - 1
-      v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    compile' (IsZero n) = compile n >>= \case
-      VInt n' -> pure $ VBool $ n' == 0
-      v -> lift $ throwE' (loc n) $ "TypeError: " <> show v <> " is not natural number. "
-    compile' (Var name) = pure $ VVar name
+    compile' (Lit (LBool b)) = pure $ Located pos (VBool b)
+    compile' (Lit (LInt i)) = pure $ Located pos (VInt i)
+    compile' (IfExp cond x y) = do
+      cond' <- toVal <$> compile cond
+      x' <- toVal <$> compile x
+      y' <- toVal <$> compile y
+      pure $ Located pos $ foldl VApp (VVar "$IF") [cond', x', y']
+    compile' (Var name) = pure $ Located pos (VVar name)
     compile' (Lambda name exp') = abstract name <$> compile exp'
-    compile' (Application exp1 exp2) = liftA2 VApp (compile exp1) (compile exp2)
-    compile' (BinOp op exp1 exp2) = compileBinOp op exp1 exp2
+    compile' (Application exp1 exp2) = do
+      val1 <- toVal <$> compile exp1
+      val2 <- toVal <$> compile exp2
+      pure $ Located pos $ VApp val1 val2
+    compile' (BinOp op exp1 exp2) = compileBinOp op exp1 exp2 pos
 
-compileBinOp :: BinOp -> Exp -> Exp -> Eval Value
-compileBinOp op exp1 exp2 = do
-  v1 <- compile exp1
-  v2 <- compile exp2
-  let actualOperator = case op of
-        Plus  -> (+)
-        Minus -> (-)
-        Multi -> (*)
-        Div   -> div -- temporary return Int
-  case (v1, v2) of
-    (VInt n1, VInt n2) -> pure . VInt $ actualOperator n1 n2
-    (VInt _, badValue) -> lift $ throwE' (loc exp2) $ "TypeError: " <> show badValue <> " is not natural number. "
-    (badValue, _) -> lift $ throwE' (loc exp1) $ "TypeError: " <> show badValue <> " is not natural number. "
+    compileBinOp :: BinOp -> Exp -> Exp -> Position -> Eval LocVal
+    compileBinOp op exp1 exp2 pos = do
+      val1 <- toVal <$> compile exp1
+      val2 <- toVal <$> compile exp2
+      let actualOp = case op of
+            Plus  -> "$ADD"
+            Minus -> "$MINUS"
+            Multi -> "$MULTI"
+            Div   -> "$DIV"
+      pure $ Located pos $ foldl VApp (VVar actualOp) [val1, val2]
 
+link :: LocVal -> Eval Value
+link (Located pos v) = linkVal v
+     where
+       linkVal (VApp fun arg) = do
+         f' <- linkVal fun
+         arg' <- linkVal arg
+         f' ! arg'
+       linkVal (VVar n)       = MA.lookup n <$> get >>= \case
+         Just v -> pure v
+         Nothing -> lift $ throwE' pos $ "UndefinedVariableError: " <> n
+       linkVal e              = pure e
 
-link :: Value -> Eval Value
-link (VApp fun arg) = do
-  f' <- link fun
-  arg' <- link arg
-  f' ! arg'
-link (VVar n)       = fromJust . MA.lookup n <$> get
-link e              = pure e
-
-abstract :: Name -> Value -> Value
-abstract x (VApp fun arg) = combS (abstract x fun) (abstract x arg)
-abstract x (VVar n)       | x == n = combI
-abstract _ k              = combK k
+abstract :: Name -> LocVal -> LocVal
+abstract x (Located pos v) = Located pos $ abstractVal x v
+  where
+    abstractVal x (VApp fun arg) =  combS (abstractVal x fun) (abstractVal x arg)
+    abstractVal x (VVar n)       | x == n = combI
+    abstractVal _ k              = combK k
 
 combS :: Value -> Value -> Value
 combS f = VApp (VApp combS_ f)

@@ -1,4 +1,4 @@
-module Eval.Value(Value(..), Eval, Env) where
+module Eval.Value(LocVal, Value(..), Eval, Env, toVal) where
 
 import           AST
 
@@ -14,12 +14,18 @@ data Value =
   | VApp Value Value
   | VDecl
 
+type LocVal = Located Value
+
+toVal :: LocVal -> Value
+toVal (Located _ v) = v
+
 instance Show Value where
-  show (VBool b) = show b
-  show (VInt n)  = show n
-  show VLambda{} = "<<function>>"
-  show VApp{}    = "<<application>>"
-  show _         = ""
+  show (VBool b)   = show b
+  show (VInt n)    = show n
+  show VLambda{}   = "<<function>>"
+  show VApp{}      = "<<application>>"
+  show (VVar name) = "variable \"" <> name <> "\""
+  show VDecl       = "<<declaration>>"
 
 
 type Env = MA.Map String Value

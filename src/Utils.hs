@@ -12,12 +12,6 @@ prettyExp (Located _ (IfExp cond x y)) tabCount =
       root = genTab tabCount ++ "IfExp"
       children = fmap (`prettyExp` (tabCount + 1)) [cond, x, y]
   in intercalate "\n" (root:children)
-prettyExp (Located _ (Succ e)) tabCount =
-  genTab tabCount ++ "Succ" ++ "\n" ++ prettyExp e (tabCount + 1)
-prettyExp (Located _ (Pred e)) tabCount =
-  genTab tabCount ++ "Pred" ++ "\n" ++ prettyExp e (tabCount + 1)
-prettyExp (Located _ (IsZero e)) tabCount =
-  genTab tabCount ++ "isZero" ++ "\n" ++ prettyExp e (tabCount + 1)
 prettyExp (Located _ (BinOp op x y)) tabCount =
   let
     root = genTab tabCount ++ "BinOp " ++ show op

@@ -26,9 +26,6 @@ $white+ ;
 <0> True { mkToken LxTrue }
 <0> False { mkToken LxFalse }
 <0> $digit+ { mkToken LxInt }
-<0> succ { mkToken LxSucc }
-<0> pred { mkToken LxPred }
-<0> isZero { mkToken LxIsZero }
 <0> $alpha+ { mkToken LxName }
 
 {
@@ -51,9 +48,6 @@ mkToken lx (pos, _, _, str) len =
     LxTrue -> pure $ TkTrue pos
     LxFalse -> pure $ TkFalse pos
     LxInt -> pure $ TkInt (pos, read t)
-    LxSucc -> pure $ TkSucc pos
-    LxPred -> pure $ TkPred pos
-    LxIsZero -> pure $ TkIsZero pos
     LxName -> pure $ TkName (pos, t)
 
 data Lexeme
@@ -73,9 +67,6 @@ data Lexeme
   | LxTrue
   | LxFalse
   | LxInt
-  | LxSucc
-  | LxPred
-  | LxIsZero
   | LxName
   deriving (Eq, Show)
 
@@ -95,9 +86,6 @@ data Token =
   | TkTrue AlexPosn
   | TkFalse AlexPosn
   | TkInt (AlexPosn, Int)
-  | TkSucc AlexPosn
-  | TkPred AlexPosn
-  | TkIsZero AlexPosn
   | TkName (AlexPosn, String)
   | TkEof
   deriving (Show)

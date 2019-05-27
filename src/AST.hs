@@ -18,9 +18,6 @@ data Exp' =
   Var Name
   | Lit Lit
   | IfExp Exp Exp Exp
-  | Succ Exp
-  | Pred Exp
-  | IsZero Exp
   | BinOp BinOp Exp Exp
   | Lambda Name Exp
   | Application Exp Exp
