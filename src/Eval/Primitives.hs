@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Eval.Primitives(primitives) where
+module Eval.Primitives(primitives, arith, if_) where
 
 import           Eval.Combinators
 import           Eval.Value
@@ -13,15 +13,7 @@ import qualified Data.Map                   as MA
 
 primitives :: MA.Map String Value
 primitives = MA.fromList
-  [ ("$I", combI_)
-  , ("$K", combK_)
-  , ("$S", combS_)
-  , ("$ADD", arith (+))
-  , ("$MINUS", arith (-))
-  , ("$MULTI", arith (*))
-  , ("$DIV", arith div)
-  , ("$IF", if_)
-  , ("print", print_)
+  [ ("print", print_)
   ]
 
 print_ :: Value

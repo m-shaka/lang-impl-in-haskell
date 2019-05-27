@@ -4,6 +4,7 @@ module Eval.Core where
 
 import           AST
 import           Eval.Combinators
+import           Eval.Primitives
 import           Eval.Value
 
 import           Control.Applicative        (liftA2)
@@ -30,7 +31,7 @@ compile exp@(Located pos exp') = compile' exp'
       cond' <- toVal <$> compile cond
       x' <- toVal <$> compile x
       y' <- toVal <$> compile y
-      pure $ Located pos $ foldl VApp (VVar "$IF") [cond', x', y']
+      pure $ Located pos $ foldl VApp if_ [cond', x', y']
     compile' (Var name) = pure $ Located pos (VVar name)
     compile' (Lambda name exp') = abstract name <$> compile exp'
     compile' (Application exp1 exp2) = do
@@ -44,11 +45,11 @@ compile exp@(Located pos exp') = compile' exp'
       val1 <- toVal <$> compile exp1
       val2 <- toVal <$> compile exp2
       let actualOp = case op of
-            Plus  -> "$ADD"
-            Minus -> "$MINUS"
-            Multi -> "$MULTI"
-            Div   -> "$DIV"
-      pure $ Located pos $ foldl VApp (VVar actualOp) [val1, val2]
+            Plus  -> (+)
+            Minus -> (-)
+            Multi -> (*)
+            Div   -> div
+      pure $ Located pos $ foldl VApp (arith actualOp) [val1, val2]
 
 link :: LocVal -> Eval Value
 link (Located pos v) = linkVal v
